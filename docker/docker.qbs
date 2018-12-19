@@ -13,6 +13,7 @@ Project {
 
         files: [
             "stretch/Dockerfile",
+            "stretch/entrypoint.sh",
             "stretch/qtifwsilent.qs",
         ]
     }

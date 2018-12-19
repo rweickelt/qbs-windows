@@ -6,11 +6,12 @@ function Controller() {
 }
 
 Controller.prototype.WelcomePageCallback = function() {
-    gui.clickButton(buttons.NextButton);
+    // click delay here because the next button is initially disabled for ~1 second
+    gui.clickButton(buttons.NextButton, 3000);
 }
 
 Controller.prototype.CredentialsPageCallback = function() {
-    gui.clickButton(buttons.NextButton);
+    gui.clickButton(buttons.CommitButton);
 }
 
 Controller.prototype.IntroductionPageCallback = function() {
@@ -25,8 +26,8 @@ Controller.prototype.TargetDirectoryPageCallback = function() {
 Controller.prototype.ComponentSelectionPageCallback = function() {
     var widget = gui.currentPageWidget();
     widget.deselectAll();
-    widget.selectComponent("qt.593.gcc_64");
-    widget.selectComponent("qt.593.qtscript");
+    widget.selectComponent("qt.qt5.597.gcc_64");
+    widget.selectComponent("qt.597.qtscript");
     gui.clickButton(buttons.NextButton);
 }
 
@@ -40,7 +41,7 @@ Controller.prototype.StartMenuDirectoryPageCallback = function() {
 }
 
 Controller.prototype.ReadyForInstallationPageCallback = function() {
-    gui.clickButton(buttons.NextButton);
+    gui.clickButton(buttons.CommitButton, 200);
 }
 
 Controller.prototype.FinishedPageCallback = function() {

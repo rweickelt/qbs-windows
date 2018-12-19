@@ -1,0 +1,35 @@
+language: cpp
+
+env:
+  global:
+    - DOCKER_REPO=qbs-ci
+
+stages:
+  - name: build docker images
+  - name: build qbs
+
+jobs:
+  include:
+    - stage: build docker images
+      sudo: required
+      services:
+        - docker
+      before_install:
+        - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+        - docker pull ${DOCKER_USERNAME}/${DOCKER_REPO}:stretch-$TRAVIS_BRANCH || true
+      script:
+        - docker build -f docker/stretch/Dockerfile -t stretch --cache-from ${DOCKER_USERNAME}/${DOCKER_REPO}:stretch-$TRAVIS_BRANCH docker/stretch/
+      after_success:
+        - docker tag stretch ${DOCKER_USERNAME}/${DOCKER_REPO}:stretch-$TRAVIS_BUILD_NUMBER
+        - docker tag stretch ${DOCKER_USERNAME}/${DOCKER_REPO}:stretch-$TRAVIS_BRANCH
+        - docker push ${DOCKER_USERNAME}/${DOCKER_REPO}:stretch-$TRAVIS_BUILD_NUMBER
+        - docker push ${DOCKER_USERNAME}/${DOCKER_REPO}:stretch-$TRAVIS_BRANCH
+    - stage: build qbs
+      sudo: required
+      services:
+        - docker
+      before_install:
+        - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+        - docker pull ${DOCKER_USERNAME}/${DOCKER_REPO}:stretch-$TRAVIS_BUILD_NUMBER
+      script:
+        - docker run --rm -v $TRAVIS_BUILD_DIR:/project -w /project ${DOCKER_USERNAME}/${DOCKER_REPO}:stretch-$TRAVIS_BUILD_NUMBER /usr/local/Qt/Tools/QtCreator/bin/qbs build profile:qt

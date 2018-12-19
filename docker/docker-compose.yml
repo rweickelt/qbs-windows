@@ -1,0 +1,12 @@
+version: "3.3"
+
+services:
+  stretch:
+    build:
+      context: stretch/
+      dockerfile: Dockerfile
+    hostname: stretch
+    network_mode: bridge
+    working_dir: /project
+    volumes:
+      - ../:/project
