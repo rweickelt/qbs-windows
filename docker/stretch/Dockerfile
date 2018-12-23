@@ -39,13 +39,13 @@ RUN apt-get update && apt-get -y update && apt-get install -y \
 # Install Qt and a prebuilt Qbs.
 #
 ARG QT_INSTALL_DIR=/usr/local/Qt
-ENV QTDIR=${QT_INSTALL_DIR}/5.9.7/gcc_64
-ENV PATH="/usr/local/Qt/Tools/QtCreator/bin:${PATH}"
+ENV QTDIR=${QT_INSTALL_DIR}/5.9.7/gcc_64 \
+    PATH="${QTDIR}/bin:${QT_INSTALL_DIR}/Tools/QtCreator/bin:${PATH}"
+RUN PATH="${QTDIR}/bin:${QT_INSTALL_DIR}/Tools/QtCreator/bin:${PATH}" > /etc/profile.d/qt-tools
 COPY qtifwsilent.qs qtifwsilent.qs
 RUN curl -L -O 'https://download.qt.io/official_releases/qt/5.9/5.9.7/qt-opensource-linux-x64-5.9.7.run' && \
     chmod +x qt-opensource-linux-x64-5.9.7.run && \
     ./qt-opensource-linux-x64-5.9.7.run --platform minimal --script qtifwsilent.qs && \
-    rm -rf ${QT_INSTALL_DIR}/Docs && \
     rm -rf ${QT_INSTALL_DIR}/Examples && \
     rm -f qt-opensource-linux-x64-5.9.7.run \
     rm -f qtifwsilent.qs
@@ -57,6 +57,7 @@ RUN apt-get update && apt-get install -y \
     g++ \
     gcc \
     git \
+    libgl1-mesa-dev \
     help2man \
     python-pip && \
     pip install beautifulsoup4 lxml # for building the documentation

@@ -1,17 +1,21 @@
+#
+# Required environment variables in the travis config
+#
+# DOCKER_USERNAME
+# DOCKER_PASSWORD
+# DOCKER_REPO: The docker repository on docker hub where images are stored
+#
+
 language: cpp
 
-env:
-  global:
-    - DOCKER_REPO=qbs-ci
-
 stages:
-  - name: build docker images
-  - name: build qbs
+  - name: Prepare build environments
+  - name: Build Qbs
 
 jobs:
   include:
-    - stage: build docker images
-      sudo: required
+    - stage: Prepare build environments
+      name: Build Debian stretch docker image
       services:
         - docker
       before_install:
@@ -24,12 +28,28 @@ jobs:
         - docker tag stretch ${DOCKER_USERNAME}/${DOCKER_REPO}:stretch-$TRAVIS_BRANCH
         - docker push ${DOCKER_USERNAME}/${DOCKER_REPO}:stretch-$TRAVIS_BUILD_NUMBER
         - docker push ${DOCKER_USERNAME}/${DOCKER_REPO}:stretch-$TRAVIS_BRANCH
-    - stage: build qbs
-      sudo: required
+
+    - stage: Build Qbs
+      name: Build with Qbs on Debian stretch
       services:
         - docker
+      env:
+        - DOCKER_RUN="docker run --rm -v $TRAVIS_BUILD_DIR:/project -w /project ${DOCKER_USERNAME}/${DOCKER_REPO}:stretch-$TRAVIS_BUILD_NUMBER"
       before_install:
         - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
         - docker pull ${DOCKER_USERNAME}/${DOCKER_REPO}:stretch-$TRAVIS_BUILD_NUMBER
       script:
-        - docker run --rm -v $TRAVIS_BUILD_DIR:/project -w /project ${DOCKER_USERNAME}/${DOCKER_REPO}:stretch-$TRAVIS_BUILD_NUMBER /usr/local/Qt/Tools/QtCreator/bin/qbs build profile:qt
+        - $DOCKER_RUN qbs build profile:qt
+
+    - stage: Build Qbs
+      name: Build with qmake/make on Debian stretch
+      services:
+        - docker
+      env:
+        - DOCKER_RUN="docker run --rm -v $TRAVIS_BUILD_DIR:/project -w /project ${DOCKER_USERNAME}/${DOCKER_REPO}:stretch-$TRAVIS_BUILD_NUMBER"
+      before_install:
+        - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+        - docker pull ${DOCKER_USERNAME}/${DOCKER_REPO}:stretch-$TRAVIS_BUILD_NUMBER
+      script:
+        - $DOCKER_RUN /usr/local/Qt/5.9.7/gcc_64/bin/qmake -r qbs.pro
+        - $DOCKER_RUN make -j $(nproc)

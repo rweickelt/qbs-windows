@@ -10,11 +10,13 @@ USER_NAME=${USER_NAME:-devel}
 EXEC=""
 export HOME=/home/${USER_NAME}
 
-if [ $(id -u ${USER_NAME}) != "${USER_UID}"  ] && [ $(id -u ${USER_NAME}) != "0" ]; then
-    usermod  -u ${USER_UID} ${USER_NAME}
-    groupmod -g ${USER_GID} ${USER_NAME}
-    chown -R -h ${USER_UID} /home;
-    chgrp -R -h ${USER_GID} /home;
+if [ $(id -u ${USER_NAME}) != "0" ]; then
+    if [ $(id -u ${USER_NAME}) != "${USER_UID}"  ]; then
+        usermod  -u ${USER_UID} ${USER_NAME}
+        groupmod -g ${USER_GID} ${USER_NAME}
+        chown -R -h ${USER_UID} /home;
+        chgrp -R -h ${USER_GID} /home;
+    fi
     EXEC="exec gosu ${USER_NAME}:${USER_NAME}"
 fi
 
