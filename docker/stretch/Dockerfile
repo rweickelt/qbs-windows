@@ -24,8 +24,9 @@ ENTRYPOINT ["/entrypoint.sh"]
 #
 # Dependencies of the Qt offline installer
 #
-RUN apt-get update && apt-get -y update && apt-get install -y \
+RUN apt-get update && apt-get -y update && apt-get install -y --no-install-recommends \
     curl \
+    ca-certificates \
     libdbus-1-3 \
     libexpat1 \
     libfontconfig1 \
@@ -38,26 +39,21 @@ RUN apt-get update && apt-get -y update && apt-get install -y \
 #
 # Install Qt and a prebuilt Qbs.
 #
-ARG QT_INSTALL_DIR=/usr/local/Qt
-ENV QTDIR=${QT_INSTALL_DIR}/5.9.7/gcc_64 \
-    PATH="${QTDIR}/bin:${QT_INSTALL_DIR}/Tools/QtCreator/bin:${PATH}"
-RUN PATH="${QTDIR}/bin:${QT_INSTALL_DIR}/Tools/QtCreator/bin:${PATH}" > /etc/profile.d/qt-tools
-COPY qtifwsilent.qs qtifwsilent.qs
-RUN curl -L -O 'https://download.qt.io/official_releases/qt/5.9/5.9.7/qt-opensource-linux-x64-5.9.7.run' && \
-    chmod +x qt-opensource-linux-x64-5.9.7.run && \
-    ./qt-opensource-linux-x64-5.9.7.run --platform minimal --script qtifwsilent.qs && \
-    rm -rf ${QT_INSTALL_DIR}/Examples && \
-    rm -f qt-opensource-linux-x64-5.9.7.run \
-    rm -f qtifwsilent.qs
+ARG QT_VERSION=5.9.7
+COPY install-qt.sh /install-qt.sh
+COPY install-qt-${QT_VERSION}.qs /install-qt.qs
+RUN /install-qt.sh ${QT_VERSION}
 
 #
 # Install development tools
 #
-RUN apt-get update && apt-get install -y \
+RUN apt-get update && apt-get install -y --no-install-recommends \
     g++ \
     gcc \
     git \
     libgl1-mesa-dev \
+    pkg-config \
+    make \
     help2man \
     python-pip && \
     pip install beautifulsoup4 lxml # for building the documentation
@@ -66,8 +62,8 @@ RUN apt-get update && apt-get install -y \
 # Configure the pre-installed qbs instance
 #
 USER $USER_NAME
-RUN qbs-setup-toolchains --detect && \
-    qbs-setup-qt ${QTDIR}/bin/qmake qt
+RUN /usr/local/Qt/Tools/QtCreator/bin/qbs-setup-toolchains --detect && \
+    /usr/local/Qt/Tools/QtCreator/bin/qbs-setup-qt /usr/local/Qt/${QT_VERSION}/gcc_64/bin/qmake qt
 
 #
 # Switch back to root user for the entrypoint script.
