@@ -25,7 +25,7 @@ chmod +x /qt-installer.run
 
 /qt-installer.run --platform minimal --script "/install-qt.qs"
 
-rm -rf ${QT_INSTALL_DIR}/Docs
+find ${QT_INSTALL_DIR}/Docs -not -name "*qdocconf" -type f -exec rm -f {} +
 rm -rf ${QT_INSTALL_DIR}/Examples
 rm -f /qt-installer.run
 rm -f /qtifwsilent.qs

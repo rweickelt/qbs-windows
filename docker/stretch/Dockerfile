@@ -64,6 +64,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 USER $USER_NAME
 RUN /usr/local/Qt/Tools/QtCreator/bin/qbs-setup-toolchains --detect && \
     /usr/local/Qt/Tools/QtCreator/bin/qbs-setup-qt /usr/local/Qt/${QT_VERSION}/gcc_64/bin/qmake qt
+ENV QBS_AUTOTEST_PROFILE=qt
 
 #
 # Switch back to root user for the entrypoint script.
