@@ -40,52 +40,78 @@ jobs:
       env:
         - QT_VERSION=5.12.0
 
-    - &build-stretch-qbs
+    - &build-stretch
       stage: Build Qbs
       name: Build with Qbs on Debian stretch (Qt 5.9.7)
       services:
         - docker
       env:
         - QT_VERSION=5.9.7
-        - DOCKER_RUN="docker run --rm -v $TRAVIS_BUILD_DIR:/project -w /project --env QBS_AUTOTEST_PROFILE=qt ${DOCKER_USERNAME}/${DOCKER_REPO}:stretch-${QT_VERSION}-$TRAVIS_BUILD_NUMBER"
+        - DOCKER_RUN="docker run --rm -d -t --name container -v ${TRAVIS_BUILD_DIR}:/project -w /project ${DOCKER_USERNAME}/${DOCKER_REPO}:stretch-${QT_VERSION}-${TRAVIS_BUILD_NUMBER}"
+        - DOCKER_EXEC="docker exec -t -u devel container"
+        - DOCKER_STOP="docker stop container"
+        - QBS="/usr/local/Qt/Tools/QtCreator/bin/qbs"
+        - QMAKE="/usr/local/Qt/${QT_VERSION}/gcc_64/bin/qmake"
       before_install:
-        - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
-        - docker pull ${DOCKER_USERNAME}/${DOCKER_REPO}:stretch-${QT_VERSION}-$TRAVIS_BUILD_NUMBER
+        - echo "${DOCKER_PASSWORD}" | docker login -u "${DOCKER_USERNAME}" --password-stdin
+        - docker pull ${DOCKER_USERNAME}/${DOCKER_REPO}:stretch-${QT_VERSION}-${TRAVIS_BUILD_NUMBER}
+      before_script:
+        - $DOCKER_RUN
       script:
-        - $DOCKER_RUN /usr/local/Qt/Tools/QtCreator/bin/qbs build profile:qt
-        - $DOCKER_RUN /usr/local/Qt/Tools/QtCreator/bin/qbs build -p "autotest-runner" profile:qt
+        - $DOCKER_EXEC $QBS build profile:qt
+        - $DOCKER_EXEC $QBS run -p qbs_app profile:qt -- setup-toolchains --detect
+        - $DOCKER_EXEC $QBS run -p qbs_app profile:qt -- setup-qt $QMAKE qt
+        - $DOCKER_EXEC $QBS build -p "autotest-runner" profile:qt
+      after_script:
+        - $DOCKER_STOP
 
-    - <<: *build-stretch-qbs
+    - <<: *build-stretch
       name: Build with Qbs on Debian stretch (Qt 5.12.0)
       env:
         - QT_VERSION=5.12.0
-        - DOCKER_RUN="docker run --rm -v $TRAVIS_BUILD_DIR:/project -w /project --env QBS_AUTOTEST_PROFILE=qt ${DOCKER_USERNAME}/${DOCKER_REPO}:stretch-${QT_VERSION}-$TRAVIS_BUILD_NUMBER"
+        - DOCKER_RUN="docker run --rm -d -t --name container -v ${TRAVIS_BUILD_DIR}:/project -w /project ${DOCKER_USERNAME}/${DOCKER_REPO}:stretch-${QT_VERSION}-${TRAVIS_BUILD_NUMBER}"
+        - DOCKER_EXEC="docker exec -t -u devel container"
+        - DOCKER_STOP="docker stop container"
+        - QBS="/usr/local/Qt/Tools/QtCreator/bin/qbs"
+        - QMAKE="/usr/local/Qt/${QT_VERSION}/gcc_64/bin/qmake"
 
-    - <<: *build-stretch-qbs
+    - <<: *build-stretch
       name: Build documentation with Qbs on Debian stretch (Qt 5.12.0)
       env:
         - QT_VERSION=5.12.0
-        - DOCKER_RUN="docker run --rm -v $TRAVIS_BUILD_DIR:/project -w /project --env QBS_AUTOTEST_PROFILE=qt ${DOCKER_USERNAME}/${DOCKER_REPO}:stretch-${QT_VERSION}-$TRAVIS_BUILD_NUMBER"
-      script:
-        - $DOCKER_RUN /usr/local/Qt/Tools/QtCreator/bin/qbs build -p "qbs documentation" profile:qt
+        - DOCKER_RUN="docker run --rm -d -t --name container -v ${TRAVIS_BUILD_DIR}:/project -w /project ${DOCKER_USERNAME}/${DOCKER_REPO}:stretch-${QT_VERSION}-${TRAVIS_BUILD_NUMBER}"
+        - DOCKER_EXEC="docker exec -t -u devel container"
+        - DOCKER_STOP="docker stop container"
+        - QBS="/usr/local/Qt/Tools/QtCreator/bin/qbs"
+        - QMAKE="/usr/local/Qt/${QT_VERSION}/gcc_64/bin/qmake"
 
-    - &build-stretch-qmake
-      stage: Build Qbs
+      script:
+        - $DOCKER_EXEC $QBS build -p "qbs documentation" profile:qt
+
+    - <<: *build-stretch
       name: Build with qmake/make on Debian stretch (Qt 5.9.7)
-      services:
-        - docker
       env:
         - QT_VERSION=5.9.7
-        - DOCKER_RUN="docker run --rm -v $TRAVIS_BUILD_DIR:/project -w /project --env QBS_AUTOTEST_PROFILE=qt ${DOCKER_USERNAME}/${DOCKER_REPO}:stretch-${QT_VERSION}-$TRAVIS_BUILD_NUMBER"
-      before_install:
-        - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
-        - docker pull ${DOCKER_USERNAME}/${DOCKER_REPO}:stretch-${QT_VERSION}-$TRAVIS_BUILD_NUMBER
-      script:
-        - $DOCKER_RUN /usr/local/Qt/${QT_VERSION}/gcc_64/bin/qmake -r qbs.pro
-        - $DOCKER_RUN make -j $(nproc)
+        - DOCKER_RUN="docker run --rm -d -t --name container -v ${TRAVIS_BUILD_DIR}:/project -w /project ${DOCKER_USERNAME}/${DOCKER_REPO}:stretch-${QT_VERSION}-${TRAVIS_BUILD_NUMBER}"
+        - DOCKER_EXEC="docker exec -t -u devel container"
+        - DOCKER_STOP="docker stop container"
+        - QBS="/usr/local/Qt/Tools/QtCreator/bin/qbs"
+        - QMAKE="/usr/local/Qt/${QT_VERSION}/gcc_64/bin/qmake"
 
-    - <<: *build-stretch-qmake
-      name: Build with qmake/make on Debian stretch (Qt 5.12.0)
+      script:
+        - $DOCKER_EXEC $QMAKE -r qbs.pro
+        - $DOCKER_EXEC make -j $(nproc)
+
+    - <<: *build-stretch
+      name: Build with qmake/make on Debian stretch (Qt 5.9.7)
       env:
         - QT_VERSION=5.12.0
-        - DOCKER_RUN="docker run --rm -v $TRAVIS_BUILD_DIR:/project -w /project --env QBS_AUTOTEST_PROFILE=qt ${DOCKER_USERNAME}/${DOCKER_REPO}:stretch-${QT_VERSION}-$TRAVIS_BUILD_NUMBER"
+        - DOCKER_RUN="docker run --rm -d -t --name container -v ${TRAVIS_BUILD_DIR}:/project -w /project ${DOCKER_USERNAME}/${DOCKER_REPO}:stretch-${QT_VERSION}-${TRAVIS_BUILD_NUMBER}"
+        - DOCKER_EXEC="docker exec -t -u devel container"
+        - DOCKER_STOP="docker stop container"
+        - QBS="/usr/local/Qt/Tools/QtCreator/bin/qbs"
+        - QMAKE="/usr/local/Qt/${QT_VERSION}/gcc_64/bin/qmake"
+
+      script:
+        - $DOCKER_EXEC $QMAKE -r qbs.pro
+        - $DOCKER_EXEC make -j $(nproc)
