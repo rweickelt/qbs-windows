@@ -1,5 +1,6 @@
 import qbs
 import qbs.FileInfo
+import qbs.Environment
 
 Project {
     references: [
@@ -37,6 +38,7 @@ Project {
                 env.push("DYLD_FRAMEWORK_PATH=" + Qt.core.libPath);
                 env.push("DYLD_LIBRARY_PATH=" + Qt.core.libPath);
             }
+            //console.info("Environment: " + JSON.stringify(Environment.currentEnv()))
             return env;
         }
     }

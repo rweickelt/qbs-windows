@@ -39,7 +39,7 @@ RUN apt-get update && apt-get -y update && apt-get install -y --no-install-recom
 #
 # Install Qt and a prebuilt Qbs.
 #
-ARG QT_VERSION=5.9.7
+ARG QT_VERSION
 COPY install-qt.sh /install-qt.sh
 COPY install-qt-${QT_VERSION}.qs /install-qt.qs
 RUN /install-qt.sh ${QT_VERSION}
