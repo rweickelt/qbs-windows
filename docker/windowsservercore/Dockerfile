@@ -1,15 +1,14 @@
-FROM microsoft/windowsservercore:10.0.14393.1884
+FROM microsoft/windowsservercore:1803
 LABEL Description="Windows Server Core development environment for Qbs with Qt 5.9, Chocolatey and various dependencies for testing Qbs modules and functionality"
 
 # Disable crash dialog for release-mode runtimes
 RUN reg add "HKLM\SOFTWARE\Microsoft\Windows\Windows Error Reporting" /v Disabled /t REG_DWORD /d 1 /f
 RUN reg add "HKLM\SOFTWARE\Microsoft\Windows\Windows Error Reporting" /v DontShowUI /t REG_DWORD /d 1 /f
 
-COPY qtifwsilent.qs C:\qtifwsilent.qs
+COPY qtifwsilent.qs c:/qtifwsilent.qs
 RUN powershell -NoProfile -ExecutionPolicy Bypass -Command \
     $ErrorActionPreference = 'Stop'; \
-    $Wc = New-Object System.Net.WebClient ; \
-    $Wc.DownloadFile('https://download.qt.io/official_releases/qt/5.9/5.9.3/qt-opensource-windows-x86-5.9.3.exe', 'C:\qt.exe') ; \
+    wget https://download.qt.io/official_releases/qt/5.9/5.9.3/qt-opensource-windows-x86-5.9.3.exe -OutFile C:\qt.exe --no-check-certificate; \
     Echo 'Downloaded qt-opensource-windows-x86-5.9.3.exe' ; \
     $Env:QT_INSTALL_DIR = 'C:\\Qt' ; \
     Start-Process C:\qt.exe -ArgumentList '--verbose --script C:/qtifwsilent.qs' -NoNewWindow -Wait ; \
