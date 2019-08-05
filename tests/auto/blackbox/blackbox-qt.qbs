@@ -1,6 +1,7 @@
 import qbs.Utilities
 
 QbsAutotest {
+    condition: false
     testName: "blackbox-qt"
     Depends { name: "qbs_app" }
     Depends { name: "qbs-setup-toolchains" }

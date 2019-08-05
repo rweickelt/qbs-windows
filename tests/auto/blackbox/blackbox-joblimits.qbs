@@ -2,6 +2,7 @@ import qbs.Utilities
 
 QbsAutotest {
     testName: "blackbox-joblimits"
+    condition: false
     Depends { name: "qbs_app" }
     Depends { name: "qbs-setup-toolchains" }
     Group {

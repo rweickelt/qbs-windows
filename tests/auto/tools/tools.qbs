@@ -2,6 +2,7 @@ import qbs
 import qbs.Utilities
 
 QbsAutotest {
+    condition: false
     Depends { name: "qbsversion" }
 
     testName: "tools"

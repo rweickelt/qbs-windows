@@ -2859,9 +2859,12 @@ void TestApi::timeout()
 
     QElapsedTimer timer;
     timer.start();
+    qDebug() << timer.elapsed();
     const std::unique_ptr<qbs::BuildJob> buildJob(project.buildOneProduct(productUnderTest,
                                                                           qbs::BuildOptions()));
     const auto testAbortTimeout = 20 * 1000ll;
+    qDebug() << timer.elapsed();
+
     /* We add an additional buffer to the expectedMaxRunTime because Qbs can take some
      * time (>1 second) to finish after the command has been cancelled.
      */
@@ -2871,8 +2874,10 @@ void TestApi::timeout()
                "testAbortTimeout must be larger than the expectedMaxRunTime. Else the "
                "test might be cancelled to early although the code is working correctly.");
     QTimer::singleShot(testAbortTimeout, buildJob.get(), &qbs::AbstractJob::cancel);
+    qDebug() << timer.elapsed();
     QVERIFY(waitForFinished(buildJob.get(), testTimeoutInMsecs()));
     const auto actualRunTime = timer.elapsed();
+    qDebug() << timer.elapsed();
     QVERIFY(buildJob->error().hasError());
     const auto errorString = buildJob->error().toString();
     QVERIFY(errorString.contains("cancel"));
