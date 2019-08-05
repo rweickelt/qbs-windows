@@ -108,4 +108,4 @@ fi
 #
 # Run all autotests with QBS_AUTOTEST_PROFILE
 #
-qbs build -p "autotest-runner" ${BUILD_OPTIONS}
+qbs build -p "autotest-runner" -j 1 ${BUILD_OPTIONS}
